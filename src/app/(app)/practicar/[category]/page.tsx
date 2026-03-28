@@ -286,14 +286,14 @@ export default function QuizPage({ params }: { params: Promise<{ category: strin
             <p className="text-sm text-muted">{ex.explanation}</p>
           </div>
           <div className="flex gap-2 mt-3">
-            <button onClick={handleNext}
-              className="flex-1 bg-spanish text-white font-bold py-3 rounded-xl text-lg">
-              Siguiente →
-            </button>
             <button onClick={() => flagExercise(ex)}
               className={`px-4 py-3 rounded-xl border transition-colors ${flagged ? "border-red-400 text-red-400" : "border-border text-muted hover:text-red-400 hover:border-red-400"}`}
               title="Reportar ejercicio">
               {flagged ? "✓" : "🚩"}
+            </button>
+            <button onClick={handleNext}
+              className="flex-1 bg-spanish text-white font-bold py-3 rounded-xl text-lg">
+              Siguiente →
             </button>
           </div>
         </div>
