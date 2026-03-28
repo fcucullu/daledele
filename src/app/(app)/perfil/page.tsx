@@ -37,10 +37,19 @@ export default function PerfilPage() {
     setLoading(false);
   };
 
-  const checkPush = () => {
-    if (!("Notification" in window)) { setPushStatus("unsupported"); return; }
-    if (Notification.permission === "granted") setPushStatus("granted");
-    else if (Notification.permission === "denied") setPushStatus("denied");
+  const checkPush = async () => {
+    if (!("serviceWorker" in navigator) || !("PushManager" in window) || !("Notification" in window)) {
+      setPushStatus("unsupported"); return;
+    }
+    if (Notification.permission === "denied") { setPushStatus("denied"); return; }
+    // Check if there's an active push subscription (not just permission)
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      setPushStatus(sub ? "granted" : "unknown");
+    } catch {
+      setPushStatus("unknown");
+    }
   };
 
   const enablePush = async () => {
@@ -66,14 +75,13 @@ export default function PerfilPage() {
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.getSubscription();
       if (sub) {
-        // Delete from DB
+        await sub.unsubscribe();
         if (user) {
           await supabase.from("daledele_push_subs").delete().eq("user_id", user.id);
         }
-        await sub.unsubscribe();
       }
-      setPushStatus("unknown");
     } catch {}
+    setPushStatus("unknown");
   };
 
   const handleSignOut = async () => {
