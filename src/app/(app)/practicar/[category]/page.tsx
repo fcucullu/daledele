@@ -33,11 +33,10 @@ export default function QuizPage({ params }: { params: Promise<{ category: strin
   useEffect(() => {
     let source: Exercise[];
     if (isChallenge) {
-      // Pull random exercises from ALL categories
       const all = CATEGORIES.flatMap(c => c.exercises);
-      source = [...all].sort(() => Math.random() - 0.5).slice(0, 20);
+      source = [...all].sort(() => Math.random() - 0.5).slice(0, 10);
     } else if (cat) {
-      source = [...cat.exercises].sort(() => Math.random() - 0.5);
+      source = [...cat.exercises].sort(() => Math.random() - 0.5).slice(0, 10);
     } else {
       return;
     }
@@ -165,8 +164,8 @@ export default function QuizPage({ params }: { params: Promise<{ category: strin
         <div className="space-y-3 max-w-xs mx-auto">
           <button onClick={() => {
             const src = isChallenge
-              ? CATEGORIES.flatMap(c => c.exercises).sort(() => Math.random()-0.5).slice(0,20)
-              : [...cat!.exercises].sort(() => Math.random()-0.5);
+              ? CATEGORIES.flatMap(c => c.exercises).sort(() => Math.random()-0.5).slice(0,10)
+              : [...cat!.exercises].sort(() => Math.random()-0.5).slice(0,10);
             setExercises(src.map(ex => ({ ...ex, options: ex.options ? [...ex.options].sort(() => Math.random()-0.5) : undefined })));
             setCurrent(0); setScore(0); setStreak(0); setBestStreak(0);
             setSelected(null); setWriteInput(""); setIsCorrect(null);

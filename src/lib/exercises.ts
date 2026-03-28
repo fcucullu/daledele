@@ -212,9 +212,12 @@ export const CATEGORIES: Category[] = [
 
 // Merge extra exercises
 import { EXTRA_EXERCISES } from "./extra-exercises";
+import { MORE_EXERCISES } from "./more-exercises";
 CATEGORIES.forEach(cat => {
   const extras = EXTRA_EXERCISES[cat.id];
   if (extras) cat.exercises.push(...extras);
+  const more = MORE_EXERCISES[cat.id];
+  if (more) cat.exercises.push(...more);
 });
 
 // Auto-add hints to write exercises that reference verbs
