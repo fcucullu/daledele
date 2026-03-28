@@ -220,13 +220,25 @@ CATEGORIES.forEach(cat => {
   if (more) cat.exercises.push(...more);
 });
 
-// Auto-add hints to write exercises that reference verbs
+// Auto-add hints to write exercises
 CATEGORIES.forEach(cat => {
   cat.exercises.forEach(ex => {
     if (ex.type === "write" && !ex.hint) {
-      // Try to extract a verb hint from the explanation
+      // Try to extract a verb hint
       const verbMatch = ex.explanation.match(/(?:verbo|verb)\s+'(\w+)'/i);
-      if (verbMatch) ex.hint = `(verbo: ${verbMatch[1]})`;
+      if (verbMatch) { ex.hint = `(verbo: ${verbMatch[1]})`; return; }
+      // Category-specific hints
+      if (cat.id === "ser-estar") ex.hint = "(ser o estar)";
+      else if (cat.id === "estaba-estuvo") ex.hint = "(estaba o estuvo)";
+      else if (cat.id === "por-para") ex.hint = "(por o para)";
+      else if (cat.id === "conectores") ex.hint = "(escribe el conector)";
+      else if (cat.id === "expresiones") ex.hint = "(completa la expresión)";
+      else if (cat.id === "preposiciones") ex.hint = "(escribe la preposición)";
+      else if (cat.id === "pasiva") ex.hint = "(completa la forma verbal)";
+      else if (cat.id === "tildes") ex.hint = "(escribe con la tilde correcta)";
+      else if (cat.id === "condicionales") ex.hint = "(conjuga el verbo)";
+      else if (cat.id === "pasados") ex.hint = "(conjuga en el pasado correcto)";
+      else if (cat.id === "subjuntivo") ex.hint = "(conjuga en subjuntivo)";
     }
   });
 });
