@@ -30,7 +30,14 @@ export default function QuizPage({ params }: { params: Promise<{ category: strin
   const confettiKey = useRef(0);
 
   useEffect(() => {
-    if (cat) setExercises([...cat.exercises].sort(() => Math.random() - 0.5));
+    if (cat) {
+      // Shuffle exercises AND shuffle options within each exercise
+      const shuffled = [...cat.exercises].sort(() => Math.random() - 0.5).map(ex => ({
+        ...ex,
+        options: ex.options ? [...ex.options].sort(() => Math.random() - 0.5) : undefined,
+      }));
+      setExercises(shuffled);
+    }
   }, [category]);
 
   const checkAnswer = (answer: string, e?: React.MouseEvent) => {
@@ -216,6 +223,7 @@ export default function QuizPage({ params }: { params: Promise<{ category: strin
 
       {ex.type === "write" && (
         <div className="w-full max-w-sm">
+          {ex.hint && <p className="text-xs text-muted mb-2 text-center">{ex.hint}</p>}
           <input type="text" value={writeInput} onChange={(e) => setWriteInput(e.target.value)}
             onKeyDown={(e) => e.key === "Enter" && !showExplanation && handleWriteSubmit()}
             disabled={showExplanation} autoFocus autoComplete="off" autoCapitalize="off"

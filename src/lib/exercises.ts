@@ -6,6 +6,7 @@ export interface Exercise {
   answer: string;
   explanation: string;
   type: ExerciseType;
+  hint?: string; // e.g. "(verbo: decir)" shown for write exercises
 }
 
 export interface Category {
@@ -208,3 +209,21 @@ export const CATEGORIES: Category[] = [
     ],
   },
 ];
+
+// Merge extra exercises
+import { EXTRA_EXERCISES } from "./extra-exercises";
+CATEGORIES.forEach(cat => {
+  const extras = EXTRA_EXERCISES[cat.id];
+  if (extras) cat.exercises.push(...extras);
+});
+
+// Auto-add hints to write exercises that reference verbs
+CATEGORIES.forEach(cat => {
+  cat.exercises.forEach(ex => {
+    if (ex.type === "write" && !ex.hint) {
+      // Try to extract a verb hint from the explanation
+      const verbMatch = ex.explanation.match(/(?:verbo|verb)\s+'(\w+)'/i);
+      if (verbMatch) ex.hint = `(verbo: ${verbMatch[1]})`;
+    }
+  });
+});
