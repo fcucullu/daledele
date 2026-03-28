@@ -61,6 +61,15 @@ export default function PerfilPage() {
     } catch {}
   };
 
+  const disablePush = async () => {
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) await sub.unsubscribe();
+      setPushStatus("unknown");
+    } catch {}
+  };
+
   const handleSignOut = async () => {
     await supabase.auth.signOut();
     router.push("/login");
@@ -73,17 +82,23 @@ export default function PerfilPage() {
   const categoriesCompleted = progress.length;
   const bestStreak = progress.reduce((max, p) => Math.max(max, p.best_streak), 0);
 
-  // Per-category accuracy
+  // Per-category accuracy — cap at 100%
   const categoryStats = CATEGORIES.map(cat => {
     const p = progress.find(pr => pr.category === cat.id);
     if (!p) return { ...cat, accuracy: null, played: 0, stars: 0 };
-    // Estimate accuracy from last_score (out of 10 questions per round)
-    const accuracy = p.last_score ? Math.round((p.last_score / 10) * 100) : null;
+    const accuracy = p.last_score ? Math.min(100, Math.round((p.last_score / 10) * 100)) : null;
     return { ...cat, accuracy, played: p.times_played, stars: p.stars };
   });
 
-  // Sort by accuracy ascending (weakest first)
-  const weakest = [...categoryStats].filter(c => c.accuracy !== null).sort((a, b) => (a.accuracy ?? 100) - (b.accuracy ?? 100));
+  // Sort by accuracy ascending (weakest first), unplayed at bottom
+  const sortedStats = [...categoryStats].sort((a, b) => {
+    if (a.accuracy === null && b.accuracy === null) return 0;
+    if (a.accuracy === null) return 1;
+    if (b.accuracy === null) return -1;
+    return a.accuracy - b.accuracy;
+  });
+
+  const weakest = sortedStats.filter(c => c.accuracy !== null);
 
   const displayName = user?.user_metadata?.full_name?.split(" ")[0] || user?.email?.split("@")[0] || "Usuario";
 
@@ -120,7 +135,7 @@ export default function PerfilPage() {
         <h2 className="text-sm font-semibold text-foreground mb-3">Acierto por categoría</h2>
         {loading ? <p className="text-xs text-muted">Cargando...</p> : (
           <div className="space-y-2">
-            {categoryStats.map(cat => (
+            {sortedStats.map(cat => (
               <div key={cat.id} className="flex items-center gap-3">
                 <span className="text-lg">{cat.emoji}</span>
                 <span className="text-xs text-foreground flex-1">{cat.name}</span>
@@ -156,10 +171,14 @@ export default function PerfilPage() {
       <div className="bg-surface rounded-xl border border-border p-4 mb-4">
         <h2 className="text-sm font-semibold text-foreground mb-3">Notificaciones</h2>
         {pushStatus === "granted" ? (
-          <div className="flex items-center gap-3">
+          <button onClick={disablePush} className="flex items-center gap-3 w-full">
             <Bell className="w-4 h-4 text-green-400" />
-            <p className="text-xs text-green-400">Recordatorios activados — recibirás una notificación diaria a las 22:00</p>
-          </div>
+            <div className="text-left flex-1">
+              <p className="text-sm text-green-400">Recordatorios activados ✓</p>
+              <p className="text-xs text-muted">Notificación diaria a las 22:00</p>
+            </div>
+            <span className="text-red-400 text-xs font-medium">Desactivar</span>
+          </button>
         ) : pushStatus === "denied" ? (
           <div className="flex items-center gap-3">
             <BellOff className="w-4 h-4 text-muted" />
