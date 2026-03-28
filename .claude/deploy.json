@@ -1,0 +1,12 @@
+{
+  "github_repo": "fcucullu/daledele",
+  "supabase_project_ref": "ytgyumihoeiwuyxbptjj",
+  "supabase_url": "https://ytgyumihoeiwuyxbptjj.supabase.co",
+  "vercel_project_name": "daledele",
+  "subdomain": "daledele",
+  "domain": "franciscocucullu.com",
+  "portfolio_title": "DaleDele",
+  "portfolio_description": "Practica español DELE B2. Subjuntivo, pasados, ser/estar, condicionales, tildes y más con ejercicios interactivos.",
+  "portfolio_tags": ["Next.js", "Supabase", "PWA", "TypeScript"],
+  "portfolio_img": "/assets/app-daledele.png"
+}
