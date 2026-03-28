@@ -28,7 +28,16 @@ export default function QuizPage({ params }: { params: Promise<{ category: strin
   const [confetti, setConfetti] = useState<ConfettiState | null>(null);
   const [bonusConfetti, setBonusConfetti] = useState<ConfettiState[]>([]);
   const [finished, setFinished] = useState(false);
+  const [flagged, setFlagged] = useState(false);
   const confettiKey = useRef(0);
+
+  const flagExercise = (exercise: Exercise) => {
+    const flags = JSON.parse(localStorage.getItem("daledele_flags") || "[]");
+    flags.push({ sentence: exercise.sentence, answer: exercise.answer, category, timestamp: new Date().toISOString() });
+    localStorage.setItem("daledele_flags", JSON.stringify(flags));
+    setFlagged(true);
+    setTimeout(() => setFlagged(false), 2000);
+  };
 
   useEffect(() => {
     let source: Exercise[];
@@ -184,13 +193,25 @@ export default function QuizPage({ params }: { params: Promise<{ category: strin
     );
   }
 
-  // Render sentence with blank highlighted
+  // Render sentence with blanks highlighted (supports multiple ___)
   const parts = ex.sentence.split("___");
+  const answerParts = showExplanation ? ex.answer.split(", ") : [];
   const sentenceDisplay = parts.length > 1 ? (
     <p className="text-xl font-medium text-foreground leading-relaxed">
-      {parts[0]}<span className="inline-block min-w-[60px] border-b-2 border-spanish mx-1">
-        {showExplanation ? <span className={isCorrect ? "text-green-400" : "text-red-400"}>{ex.answer}</span> : " "}
-      </span>{parts[1]}
+      {parts.map((part, i) => (
+        <span key={i}>
+          {part}
+          {i < parts.length - 1 && (
+            <span className="inline-block min-w-[60px] border-b-2 border-spanish mx-1">
+              {showExplanation ? (
+                <span className={isCorrect ? "text-green-400" : "text-red-400"}>
+                  {answerParts[i] || answerParts[0]}
+                </span>
+              ) : " "}
+            </span>
+          )}
+        </span>
+      ))}
     </p>
   ) : (
     <p className="text-xl font-medium text-foreground leading-relaxed">{ex.sentence}</p>
@@ -264,10 +285,17 @@ export default function QuizPage({ params }: { params: Promise<{ category: strin
             <p className="text-sm font-medium mb-1">{isCorrect ? "✅ ¡Correcto!" : "❌ Incorrecto"}</p>
             <p className="text-sm text-muted">{ex.explanation}</p>
           </div>
-          <button onClick={handleNext}
-            className="w-full mt-3 bg-spanish text-white font-bold py-3 rounded-xl text-lg">
-            Siguiente →
-          </button>
+          <div className="flex gap-2 mt-3">
+            <button onClick={handleNext}
+              className="flex-1 bg-spanish text-white font-bold py-3 rounded-xl text-lg">
+              Siguiente →
+            </button>
+            <button onClick={() => flagExercise(ex)}
+              className={`px-4 py-3 rounded-xl border transition-colors ${flagged ? "border-red-400 text-red-400" : "border-border text-muted hover:text-red-400 hover:border-red-400"}`}
+              title="Reportar ejercicio">
+              {flagged ? "✓" : "🚩"}
+            </button>
+          </div>
         </div>
       )}
 

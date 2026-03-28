@@ -65,7 +65,13 @@ export default function PerfilPage() {
     try {
       const reg = await navigator.serviceWorker.ready;
       const sub = await reg.pushManager.getSubscription();
-      if (sub) await sub.unsubscribe();
+      if (sub) {
+        // Delete from DB
+        if (user) {
+          await supabase.from("daledele_push_subs").delete().eq("user_id", user.id);
+        }
+        await sub.unsubscribe();
+      }
       setPushStatus("unknown");
     } catch {}
   };
