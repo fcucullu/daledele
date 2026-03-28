@@ -13,6 +13,7 @@ export default function QuizPage({ params }: { params: Promise<{ category: strin
   const { category } = use(params);
   const router = useRouter();
   const supabase = createClient();
+  const isChallenge = category === "desafio";
   const cat = CATEGORIES.find((c) => c.id === category);
 
   const [exercises, setExercises] = useState<Exercise[]>([]);
@@ -30,14 +31,22 @@ export default function QuizPage({ params }: { params: Promise<{ category: strin
   const confettiKey = useRef(0);
 
   useEffect(() => {
-    if (cat) {
-      // Shuffle exercises AND shuffle options within each exercise
-      const shuffled = [...cat.exercises].sort(() => Math.random() - 0.5).map(ex => ({
-        ...ex,
-        options: ex.options ? [...ex.options].sort(() => Math.random() - 0.5) : undefined,
-      }));
-      setExercises(shuffled);
+    let source: Exercise[];
+    if (isChallenge) {
+      // Pull random exercises from ALL categories
+      const all = CATEGORIES.flatMap(c => c.exercises);
+      source = [...all].sort(() => Math.random() - 0.5).slice(0, 20);
+    } else if (cat) {
+      source = [...cat.exercises].sort(() => Math.random() - 0.5);
+    } else {
+      return;
     }
+    // Shuffle options within each exercise
+    const shuffled = source.map(ex => ({
+      ...ex,
+      options: ex.options ? [...ex.options].sort(() => Math.random() - 0.5) : undefined,
+    }));
+    setExercises(shuffled);
   }, [category]);
 
   const checkAnswer = (answer: string, e?: React.MouseEvent) => {
@@ -98,6 +107,7 @@ export default function QuizPage({ params }: { params: Promise<{ category: strin
   };
 
   const saveProgress = async () => {
+    if (isChallenge) return;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
     const finalScore = score + (isCorrect ? 1 : 0);
@@ -132,7 +142,9 @@ export default function QuizPage({ params }: { params: Promise<{ category: strin
     }
   };
 
-  if (!cat || exercises.length === 0) return null;
+  if ((!cat && !isChallenge) || exercises.length === 0) return null;
+  const catName = isChallenge ? "Desafío" : cat!.name;
+  const catEmoji = isChallenge ? "🎯" : cat!.emoji;
 
   const ex = exercises[current];
   const finalScore = score;
@@ -144,7 +156,7 @@ export default function QuizPage({ params }: { params: Promise<{ category: strin
     return (
       <div className="text-center py-8">
         <div className="text-6xl mb-4 animate-bounce-in">{stars === 3 ? "🏆" : stars === 2 ? "⭐" : "👏"}</div>
-        <h1 className="text-2xl font-bold text-foreground mb-2">¡{cat.name} completado!</h1>
+        <h1 className="text-2xl font-bold text-foreground mb-2">¡{catName} completado!</h1>
         <p className="text-4xl font-bold spanish-shimmer mb-4">{finalScore}/{exercises.length}</p>
         <div className="flex justify-center gap-1 mb-4">
           {[1,2,3].map((s) => <span key={s} className={`text-3xl ${s <= stars ? "" : "opacity-20"}`}>⭐</span>)}
@@ -152,7 +164,10 @@ export default function QuizPage({ params }: { params: Promise<{ category: strin
         {bestStreak > 0 && <p className="text-sm text-muted mb-6">🔥 Mejor racha: {bestStreak}</p>}
         <div className="space-y-3 max-w-xs mx-auto">
           <button onClick={() => {
-            setExercises([...cat.exercises].sort(() => Math.random()-0.5));
+            const src = isChallenge
+              ? CATEGORIES.flatMap(c => c.exercises).sort(() => Math.random()-0.5).slice(0,20)
+              : [...cat!.exercises].sort(() => Math.random()-0.5);
+            setExercises(src.map(ex => ({ ...ex, options: ex.options ? [...ex.options].sort(() => Math.random()-0.5) : undefined })));
             setCurrent(0); setScore(0); setStreak(0); setBestStreak(0);
             setSelected(null); setWriteInput(""); setIsCorrect(null);
             setShowExplanation(false); setFinished(false);
@@ -197,7 +212,7 @@ export default function QuizPage({ params }: { params: Promise<{ category: strin
       </div>
 
       {/* Category badge */}
-      <div className="text-xs text-muted mb-4">{cat.emoji} {cat.name}</div>
+      <div className="text-xs text-muted mb-4">{catEmoji} {catName}</div>
 
       {/* Question */}
       <div className="text-center mb-6 px-4">{sentenceDisplay}</div>

@@ -56,6 +56,13 @@ export default function PracticarPage() {
           );
         })}
       </div>
+
+      <Link href="/practicar/desafio"
+        className="block mt-6 bg-spanish/10 border border-spanish/30 rounded-2xl p-4 text-center hover:bg-spanish/20 transition-colors">
+        <span className="text-2xl block mb-1">🎯</span>
+        <span className="font-bold text-spanish">Modo Desafío</span>
+        <p className="text-xs text-muted mt-1">20 preguntas aleatorias de todas las categorías</p>
+      </Link>
     </div>
   );
 }
