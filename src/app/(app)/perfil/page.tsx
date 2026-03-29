@@ -57,7 +57,7 @@ export default function PerfilPage() {
     if (result !== "granted") { setPushStatus("denied"); return; }
     try {
       const reg = await navigator.serviceWorker.ready;
-      const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+      const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "BGzjcgYA1QRmRKc-mZ8REkjyz3mbmZJVzZGmgxQ780ZWV5Glj3JbXcIoProXoStyGXH5LYVn2d5eR8sJH_QxrMI";
       if (!vapidKey || !user) return;
       let sub = await reg.pushManager.getSubscription();
       if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: vapidKey });
