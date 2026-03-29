@@ -53,9 +53,11 @@ export default function PerfilPage() {
   };
 
   const [pushError, setPushError] = useState<string | null>(null);
+  const [pushLoading, setPushLoading] = useState(false);
 
   const enablePush = async () => {
     setPushError(null);
+    setPushLoading(true);
     try {
       // Step 1: Request permission
       const result = await Notification.requestPermission();
@@ -86,6 +88,7 @@ export default function PerfilPage() {
     } catch (err: any) {
       setPushError(err.message || "Error desconocido");
     }
+    setPushLoading(false);
   };
 
   const disablePush = async () => {
@@ -219,18 +222,19 @@ export default function PerfilPage() {
         ) : pushStatus === "unsupported" ? (
           <p className="text-xs text-muted">Tu navegador no soporta notificaciones push.</p>
         ) : (
-          <button onClick={enablePush} className="flex items-center gap-3 w-full">
+          <button onClick={enablePush} disabled={pushLoading} className="flex items-center gap-3 w-full">
             <Bell className="w-4 h-4 text-spanish" />
             <div className="text-left flex-1">
               <p className="text-sm text-foreground">Activar recordatorios</p>
               <p className="text-xs text-muted">Una notificación diaria a las 22:00</p>
             </div>
-            <span className="text-spanish text-sm font-medium">Activar</span>
+            <span className="text-spanish text-sm font-medium">{pushLoading ? "Activando..." : "Activar"}</span>
           </button>
         )}
         {pushError && (
           <p className="text-xs text-red-400 mt-2">Error: {pushError}</p>
         )}
+        <p className="text-[10px] text-muted/40 mt-1">Estado: {pushStatus} | SW: {"serviceWorker" in navigator ? "sí" : "no"} | Push: {"PushManager" in window ? "sí" : "no"}</p>
       </div>
 
       {/* Sign out */}
