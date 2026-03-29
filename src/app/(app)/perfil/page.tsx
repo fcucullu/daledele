@@ -52,22 +52,40 @@ export default function PerfilPage() {
     }
   };
 
+  const [pushError, setPushError] = useState<string | null>(null);
+
   const enablePush = async () => {
-    const result = await Notification.requestPermission();
-    if (result !== "granted") { setPushStatus("denied"); return; }
+    setPushError(null);
     try {
+      // Step 1: Request permission
+      const result = await Notification.requestPermission();
+      if (result !== "granted") { setPushStatus("denied"); setPushError("Permiso denegado"); return; }
+
+      // Step 2: Get service worker
+      if (!("serviceWorker" in navigator)) { setPushError("Service Worker no disponible"); return; }
       const reg = await navigator.serviceWorker.ready;
-      const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY || "BGzjcgYA1QRmRKc-mZ8REkjyz3mbmZJVzZGmgxQ780ZWV5Glj3JbXcIoProXoStyGXH5LYVn2d5eR8sJH_QxrMI";
-      if (!vapidKey || !user) return;
+
+      // Step 3: Subscribe to push
+      const vapidKey = "BGzjcgYA1QRmRKc-mZ8REkjyz3mbmZJVzZGmgxQ780ZWV5Glj3JbXcIoProXoStyGXH5LYVn2d5eR8sJH_QxrMI";
       let sub = await reg.pushManager.getSubscription();
-      if (!sub) sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: vapidKey });
-      await fetch("/api/push", {
+      if (!sub) {
+        sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: vapidKey });
+      }
+
+      // Step 4: Register in DB
+      if (!user) { setPushError("Usuario no autenticado"); return; }
+      const res = await fetch("/api/push", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: user.id, subscription: sub.toJSON() }),
       });
+
+      if (!res.ok) { setPushError(`Error del servidor: ${res.status}`); return; }
+
       setPushStatus("granted");
-    } catch {}
+    } catch (err: any) {
+      setPushError(err.message || "Error desconocido");
+    }
   };
 
   const disablePush = async () => {
@@ -209,6 +227,9 @@ export default function PerfilPage() {
             </div>
             <span className="text-spanish text-sm font-medium">Activar</span>
           </button>
+        )}
+        {pushError && (
+          <p className="text-xs text-red-400 mt-2">Error: {pushError}</p>
         )}
       </div>
 
