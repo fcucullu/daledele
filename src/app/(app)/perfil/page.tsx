@@ -60,14 +60,19 @@ export default function PerfilPage() {
     setPushLoading(true);
     try {
       // Step 1: Request permission
+      setPushError("Paso 1: pidiendo permiso...");
       const result = await Notification.requestPermission();
-      if (result !== "granted") { setPushStatus("denied"); setPushError("Permiso denegado"); return; }
+      if (result !== "granted") { setPushStatus("denied"); setPushError(`Permiso: ${result}`); setPushLoading(false); return; }
 
       // Step 2: Get service worker
-      if (!("serviceWorker" in navigator)) { setPushError("Service Worker no disponible"); return; }
-      const reg = await navigator.serviceWorker.ready;
+      setPushError("Paso 2: esperando service worker...");
+      const reg = await Promise.race([
+        navigator.serviceWorker.ready,
+        new Promise((_, reject) => setTimeout(() => reject(new Error("SW timeout (5s)")), 5000))
+      ]) as ServiceWorkerRegistration;
 
       // Step 3: Subscribe to push
+      setPushError("Paso 3: suscribiendo push...");
       const vapidKey = "BGzjcgYA1QRmRKc-mZ8REkjyz3mbmZJVzZGmgxQ780ZWV5Glj3JbXcIoProXoStyGXH5LYVn2d5eR8sJH_QxrMI";
       let sub = await reg.pushManager.getSubscription();
       if (!sub) {
@@ -75,18 +80,20 @@ export default function PerfilPage() {
       }
 
       // Step 4: Register in DB
-      if (!user) { setPushError("Usuario no autenticado"); return; }
+      setPushError("Paso 4: guardando en servidor...");
+      if (!user) { setPushError("Usuario no autenticado"); setPushLoading(false); return; }
       const res = await fetch("/api/push", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: user.id, subscription: sub.toJSON() }),
       });
 
-      if (!res.ok) { setPushError(`Error del servidor: ${res.status}`); return; }
+      if (!res.ok) { setPushError(`Error del servidor: ${res.status}`); setPushLoading(false); return; }
 
+      setPushError(null);
       setPushStatus("granted");
     } catch (err: any) {
-      setPushError(err.message || "Error desconocido");
+      setPushError(`Error: ${err.message || "desconocido"}`);
     }
     setPushLoading(false);
   };
