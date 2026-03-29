@@ -118,7 +118,7 @@ export default function QuizPage({ params }: { params: Promise<{ category: strin
     if (isChallenge) return;
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
-    const finalScore = score + (isCorrect ? 1 : 0);
+    const finalScore = score;
     const errors = exercises.length - finalScore;
     const stars = errors === 0 ? 3 : errors <= 2 ? 2 : 1;
 
