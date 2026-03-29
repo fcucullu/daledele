@@ -60,19 +60,16 @@ export default function PerfilPage() {
     setPushLoading(true);
     try {
       // Step 1: Request permission
-      setPushError("Paso 1: pidiendo permiso...");
       const result = await Notification.requestPermission();
-      if (result !== "granted") { setPushStatus("denied"); setPushError(`Permiso: ${result}`); setPushLoading(false); return; }
+      if (result !== "granted") { setPushStatus("denied"); setPushLoading(false); return; }
 
       // Step 2: Get service worker
-      setPushError("Paso 2: esperando service worker...");
       const reg = await Promise.race([
         navigator.serviceWorker.ready,
         new Promise((_, reject) => setTimeout(() => reject(new Error("SW timeout (5s)")), 5000))
       ]) as ServiceWorkerRegistration;
 
       // Step 3: Subscribe to push
-      setPushError("Paso 3: suscribiendo push...");
       const vapidKey = "BGzjcgYA1QRmRKc-mZ8REkjyz3mbmZJVzZGmgxQ780ZWV5Glj3JbXcIoProXoStyGXH5LYVn2d5eR8sJH_QxrMI";
       let sub = await reg.pushManager.getSubscription();
       if (!sub) {
@@ -80,7 +77,6 @@ export default function PerfilPage() {
       }
 
       // Step 4: Register in DB
-      setPushError("Paso 4: guardando en servidor...");
       if (!user) { setPushError("Usuario no autenticado"); setPushLoading(false); return; }
       const res = await fetch("/api/push", {
         method: "PUT",
@@ -241,7 +237,6 @@ export default function PerfilPage() {
         {pushError && (
           <p className="text-xs text-red-400 mt-2">Error: {pushError}</p>
         )}
-        <p className="text-[10px] text-muted/40 mt-1">Estado: {pushStatus} | SW: {"serviceWorker" in navigator ? "sí" : "no"} | Push: {"PushManager" in window ? "sí" : "no"}</p>
       </div>
 
       {/* Sign out */}
