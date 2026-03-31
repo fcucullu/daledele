@@ -239,6 +239,16 @@ export default function PerfilPage() {
         )}
       </div>
 
+      {/* WhatsApp feedback */}
+      <a
+        href="https://wa.me/34644941706?text=Hey%20Fran!%20%F0%9F%91%8B%20I'm%20using%20DaleDele%20and%20wanted%20to%20tell%20you..."
+        target="_blank"
+        rel="noopener noreferrer"
+        className="w-full flex items-center justify-center gap-2 bg-surface border border-border rounded-xl py-4 text-sm font-medium text-foreground hover:border-spanish/30 transition-colors mb-4"
+      >
+        Feedback? Chat with Fran 💬
+      </a>
+
       {/* Sign out */}
       <button onClick={handleSignOut}
         className="w-full bg-surface rounded-xl border border-border p-4 flex items-center gap-3 text-red-400">
