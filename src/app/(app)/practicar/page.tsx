@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client";
 import Link from "next/link";
 import { Star } from "lucide-react";
 import { CATEGORIES } from "@/lib/exercises";
+import { InstallPrompt } from "@/components/install-prompt";
 
 export default function PracticarPage() {
   const supabase = createClient();
@@ -23,7 +24,8 @@ export default function PracticarPage() {
 
   return (
     <div>
-      <div className="text-center mb-8">
+      <InstallPrompt />
+      <div className="text-center mb-8 mt-4">
         <div className="text-5xl mb-2">🦐</div>
         <h1 className="text-3xl font-bold spanish-shimmer mb-1">DaleDele</h1>
         <p className="text-sm text-muted">Practica español nivel DELE B2</p>
