@@ -5,11 +5,26 @@ import { ServiceWorkerRegister } from "@/components/sw-register";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://daledele.franciscocucullu.com"),
   title: "DaleDele",
   description: "Practica español DELE B2",
   manifest: "/manifest.json",
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "DaleDele" },
   other: { google: "notranslate" },
+  openGraph: {
+    title: "Dale Dele",
+    description: "Practicá español para el DELE B2: subjuntivo, pasados, ser/estar y más con ejercicios interactivos.",
+    url: "https://daledele.franciscocucullu.com",
+    siteName: "Dale Dele",
+    type: "website",
+    images: [{ url: "/og-image.jpg", width: 1200, height: 630 }],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Dale Dele",
+    description: "Practicá español para el DELE B2: subjuntivo, pasados, ser/estar y más con ejercicios interactivos.",
+    images: ["/og-image.jpg"],
+  },
 };
 
 export const viewport: Viewport = {
